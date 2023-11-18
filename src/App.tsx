@@ -9,10 +9,20 @@ function App() {
   const [users, setUsers] = useState<User[]>([])
   const [colors, setColors] = useState(true)
   const [sortByCountry, setSortByCountry] = useState(false)
+  const [filterCountry, setFilterCountry] = useState<string>('')
 
   const toggleColors = () => setColors(!colors)
 
   const toggleSortByCountry = () => setSortByCountry(!sortByCountry)
+
+  const removeUser = (id: string) => {
+    const newUsers = users.filter((user) => {
+      return user.login.uuid !== id
+    })
+    setUsers(newUsers)
+  }
+
+  const reset = () => setUsers(initialUsers)
 
   useEffect(() => {
     fetch('https://randomuser.me/api?results=50')
@@ -24,20 +34,22 @@ function App() {
       .catch((error) => console.error('Error fetching data:', error))
   }, [])
 
-  const removeUser = (id: string) => {
-    const newUsers = users.filter((user) => {
-      return user.login.uuid !== id
-    })
-    setUsers(newUsers)
-  }
+  //first filter if needed
+  const filteredUsers =
+    filterCountry.length > 0
+      ? users.filter((user) => {
+          return user.location.country
+            .toLowerCase()
+            .includes(filterCountry.toLowerCase())
+        })
+      : users
 
-  const reset = () => setUsers(initialUsers)
-
+  //then sort just the filtered ones
   const sortedUsers = sortByCountry
-    ? [...users].sort((a, b) => {
+    ? [...filteredUsers].sort((a, b) => {
         return a.location.country.localeCompare(b.location.country)
       })
-    : users
+    : filteredUsers
 
   return (
     <>
@@ -48,6 +60,11 @@ function App() {
           {sortByCountry ? 'no sort' : 'sort by country'}
         </button>
         <button onClick={reset}>reset</button>
+        <input
+          type="text"
+          onChange={(ev) => setFilterCountry(ev.target.value)}
+          placeholder="Filter by country"
+        />
       </header>
       <main>
         {users.length > 0 ? (

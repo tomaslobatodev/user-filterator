@@ -11,3 +11,7 @@ header {
   justify-content: center;
   margin: 16px 0;
 }
+
+header input {
+  padding: 8px;
+}
